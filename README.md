@@ -1,2 +1,2 @@
 # chubble
-turns chatgpt conversations into a visual web
+turns chatgpt conversations into an interactive visual web.
