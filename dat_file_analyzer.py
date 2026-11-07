@@ -5,7 +5,6 @@ from PIL import Image, ImageFile
 # Force PIL to load truncated/partially corrupted images without throwing an error
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-
 png_counter = 0
 jpg_counter = 0
 pdf_counter = 0
@@ -31,17 +30,29 @@ def identify_and_check_file(dat_file_path: Path) -> str:
 
     return file_type
 
-def reconstruct_png_file(png_path: Path, dest_path: str):
-    og_name = png_path.stem
-    with Image.open(png_path) as img:
+def reconstruct_png_file(png_dat: Path, dest_path: str):
+    og_name = png_dat.stem
+    with Image.open(png_dat) as img:
         if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
             img = img.convert("RGBA")
         else:
             img = img.convert("RGB")
 
+
         dest_path = dest_path / f"{og_name}.png"
 
         img.save(dest_path, format="PNG")
+
+def reconstruct_jpeg_file(jpg_dat: Path, dest_path: str):
+    og_name = jpg_dat.stem
+    dest_path = dest_path / f"{og_name}.jpeg"
+    if not Path(dest_path).exists():
+        with Image.open(jpg_dat) as img:
+            if img.mode in ("RGB", "L"):
+                img = img.convert("RGB")
+
+
+            img.save(dest_path, format="JPEG" )
 
 def save_dat_as_pdf(pdf_path: Path, dest_path: str):
     dest_path = dest_path / f"{pdf_path.stem}.pdf"
@@ -75,6 +86,11 @@ def reconstruct_file(image_paths: list[Path]):
                 destination_path = dest_path / "pdf_files"
                 destination_path.mkdir(parents=True, exist_ok=True)
                 save_dat_as_pdf(input_file, destination_path)
+
+            elif file_type == "JPEG Image":
+                destination_path = dest_path / "jpeg_images"
+                destination_path.mkdir(parents=True, exist_ok=True)
+                reconstruct_jpeg_file(input_file, dest_path=destination_path)
                 
 
         except Exception as e:
